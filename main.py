@@ -1,9 +1,13 @@
 import dotenv
+import os
 
 dotenv.load_dotenv()
-from openai import OpenAI
 import asyncio
 import streamlit as st
+
+# Streamlit Cloud 환경에서는 st.secrets에서 API 키를 읽어옴
+if "OPENAI_API_KEY" in st.secrets:
+    os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 from agents import (
     Runner,
     SQLiteSession,
@@ -12,8 +16,6 @@ from agents import (
 )
 from models import RestaurantContext
 from my_agents.triage_agent import triage_agent
-
-client = OpenAI()
 
 restaurant_ctx = RestaurantContext(
     customer_id=1,
@@ -95,7 +97,10 @@ async def run_agent(message):
             )
 
         except OutputGuardrailTripwireTriggered:
-            st.write("죄송합니다. 응답을 처리하는 중 문제가 발생했습니다. 다시 시도해 주세요.")
+            st.write("[output guardrail 작동]")
+            st.write(
+                "죄송합니다. 응답을 처리하는 중 문제가 발생했습니다. 다시 시도해 주세요."
+            )
             st.session_state["text_placeholder"].empty()
 
 
